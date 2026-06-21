@@ -651,7 +651,7 @@
 
         function attemptLogin() {
             const pass = document.getElementById('login-pass').value;
-            if (pass === "%%PANEL_PASSWORD%%") {
+            if (pass === "samack123") {
                 sessionStorage.setItem('samack_admin_logged', 'true');
                 document.getElementById('login-overlay').style.display = 'none';
                 initPainel();
@@ -686,8 +686,8 @@
         }
 
         function getSupabaseConfig() {
-            const defaultUrl = deobfuscate("%%SUPABASE_URL%%");
-            const defaultKey = deobfuscate("%%SUPABASE_KEY%%");
+            const defaultUrl = deobfuscate("==wbj5SZzFmYhBXdz5SawdXc0FmYu5WcllGawVWd3BXZ59yL6MHc0RHa");
+            const defaultKey = deobfuscate("=clS0lkTmRGRfFUUIFmVmBTdrVjNrlnWZJTcxNVVV50X0VmcjV2cfJ2c");
             const url = localStorage.getItem('samack_supabase_url') || defaultUrl || '';
             const key = localStorage.getItem('samack_supabase_key') || defaultKey || '';
             return { url, key };
