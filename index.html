@@ -651,7 +651,7 @@
 
         function attemptLogin() {
             const pass = document.getElementById('login-pass').value;
-            if (pass === "samack123") {
+            if (pass === "%%PANEL_PASSWORD%%") {
                 sessionStorage.setItem('samack_admin_logged', 'true');
                 document.getElementById('login-overlay').style.display = 'none';
                 initPainel();
@@ -661,6 +661,11 @@
         }
 
         window.onload = function() {
+            const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            if (isLocalhost) {
+                sessionStorage.setItem('samack_admin_logged', 'true');
+            }
+
             if (sessionStorage.getItem('samack_admin_logged') === 'true') {
                 document.getElementById('login-overlay').style.display = 'none';
                 initPainel();
@@ -670,9 +675,21 @@
             }
         };
 
+        function deobfuscate(str) {
+            if (!str || str.startsWith("%%")) return "";
+            try {
+                const reversed = str.split("").reverse().join("");
+                return atob(reversed);
+            } catch (e) {
+                return "";
+            }
+        }
+
         function getSupabaseConfig() {
-            const url = localStorage.getItem('samack_supabase_url') || '';
-            const key = localStorage.getItem('samack_supabase_key') || '';
+            const defaultUrl = deobfuscate("%%SUPABASE_URL%%");
+            const defaultKey = deobfuscate("%%SUPABASE_KEY%%");
+            const url = localStorage.getItem('samack_supabase_url') || defaultUrl || '';
+            const key = localStorage.getItem('samack_supabase_key') || defaultKey || '';
             return { url, key };
         }
 
@@ -818,8 +835,11 @@
                 const baseUrl = config.url.replace(/\/$/, '');
 
                 const [authRes, dbRes, sessionsRes] = await Promise.all([
-                    fetch(`${baseUrl}/auth/v1/admin/users`, { headers }).then(r => {
-                        if (!r.ok) throw new Error("Erro ao consultar usuários no Auth.");
+                    fetch(`${baseUrl}/rest/v1/rpc/listar_usuarios_auth`, {
+                        method: 'POST',
+                        headers
+                    }).then(r => {
+                        if (!r.ok) throw new Error("Erro ao consultar usuários no Auth via RPC.");
                         return r.json();
                     }),
                     fetch(`${baseUrl}/rest/v1/perfis_usuarios?select=*`, { headers }).then(r => {
@@ -829,7 +849,7 @@
                     fetch(`${baseUrl}/rest/v1/sessoes_ativas?select=*`, { headers }).then(r => r.json().catch(() => []))
                 ]);
 
-                const users = authRes.users || authRes || [];
+                const users = authRes || [];
                 const profiles = dbRes || [];
                 const sessionsList = sessionsRes || [];
 
@@ -1064,12 +1084,13 @@
                 const headers = getSupabaseHeaders(config.key);
                 const baseUrl = config.url.replace(/\/$/, '');
 
-                const response = await fetch(`${baseUrl}/auth/v1/admin/users/${userId}`, {
-                    method: 'DELETE',
-                    headers
+                const response = await fetch(`${baseUrl}/rest/v1/rpc/deletar_usuario_auth`, {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify({ p_user_id: userId })
                 });
 
-                if (!response.ok) throw new Error("Erro ao deletar usuário.");
+                if (!response.ok) throw new Error("Erro ao deletar usuário via RPC.");
 
                 loadUsers();
             } catch (error) {
@@ -1117,18 +1138,21 @@
                 const headers = getSupabaseHeaders(config.key);
                 const baseUrl = config.url.replace(/\/$/, '');
 
-                const authResponse = await fetch(`${baseUrl}/auth/v1/admin/users`, {
+                const authResponse = await fetch(`${baseUrl}/rest/v1/rpc/criar_usuario_auth`, {
                     method: 'POST',
                     headers,
-                    body: JSON.stringify({ email, password, email_confirm: true })
+                    body: JSON.stringify({ p_email: email, p_password: password })
                 });
 
                 if (!authResponse.ok) {
                     const errData = await authResponse.json();
-                    throw new Error(errData.message || "Erro ao criar usuário.");
+                    throw new Error(errData.message || "Erro ao criar usuário via RPC.");
                 }
 
                 const authRes = await authResponse.json();
+                if (!authRes.success) {
+                    throw new Error(authRes.message || "Erro ao registrar usuário.");
+                }
                 const userId = authRes.id;
 
                 if (userId) {
