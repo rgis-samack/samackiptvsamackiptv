@@ -865,12 +865,18 @@
                     fetch(`${baseUrl}/rest/v1/rpc/listar_usuarios_auth`, {
                         method: 'POST',
                         headers
-                    }).then(r => {
-                        if (!r.ok) throw new Error("Erro ao consultar usuários no Auth via RPC.");
+                    }).then(async r => {
+                        if (!r.ok) {
+                            const txt = await r.text().catch(() => "");
+                            throw new Error(`Erro ao consultar usuários no Auth via RPC: ${r.status} ${r.statusText} - ${txt}`);
+                        }
                         return r.json();
                     }),
-                    fetch(`${baseUrl}/rest/v1/perfis_usuarios?select=*`, { headers }).then(r => {
-                        if (!r.ok) throw new Error("Erro ao consultar perfis de usuário.");
+                    fetch(`${baseUrl}/rest/v1/perfis_usuarios?select=*`, { headers }).then(async r => {
+                        if (!r.ok) {
+                            const txt = await r.text().catch(() => "");
+                            throw new Error(`Erro ao consultar perfis de usuário: ${r.status} ${r.statusText} - ${txt}`);
+                        }
                         return r.json();
                     }),
                     fetch(`${baseUrl}/rest/v1/sessoes_ativas?select=*`, { headers }).then(r => r.json().catch(() => []))
