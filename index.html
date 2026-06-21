@@ -701,7 +701,7 @@
 
         function getSupabaseConfig() {
             const defaultUrl = deobfuscate("==wbj5SZzFmYhBXdz5SawdXc0FmYu5WcllGawVWd3BXZ59yL6MHc0RHa");
-            const defaultKey = deobfuscate("=clS0lkTmRGRfFUUIFmVmBTdrVjNrlnWZJTcxNVVV50X0VmcjV2cfJ2c");
+            const defaultKey = deobfuscate("==wSvpkZ5MlNT91dpZlc0pGOtkXWyQXTJl0YBdDbyIEdfVGbiFGazlGbiVHcfJ2c");
             
             const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
             
@@ -851,6 +851,22 @@
             const tbody = document.getElementById('users-table-body');
             tbody.innerHTML = `<tr><td colspan="8" style="text-align: center;">Carregando usuários...</td></tr>`;
 
+            const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            
+            if (isLocalhost) {
+                try {
+                    const response = await fetch('/api/users');
+                    if (!response.ok) throw new Error("Erro ao consultar usuários no servidor local.");
+                    allUsers = await response.json();
+                    updateStats();
+                    renderUsersTable(allUsers);
+                } catch (error) {
+                    console.error(error);
+                    tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--danger);">Erro ao carregar dados: ${error.message}</td></tr>`;
+                }
+                return;
+            }
+
             const config = getSupabaseConfig();
             if (!config.url || !config.key) {
                 showConfigPanel();
@@ -872,14 +888,20 @@
                         }
                         return r.json();
                     }),
-                    fetch(`${baseUrl}/rest/v1/perfis_usuarios?select=*`, { headers }).then(async r => {
+                    fetch(`${baseUrl}/rest/v1/rpc/listar_perfis_usuarios`, {
+                        method: 'POST',
+                        headers
+                    }).then(async r => {
                         if (!r.ok) {
                             const txt = await r.text().catch(() => "");
-                            throw new Error(`Erro ao consultar perfis de usuário: ${r.status} ${r.statusText} - ${txt}`);
+                            throw new Error(`Erro ao consultar perfis de usuário via RPC: ${r.status} ${r.statusText} - ${txt}`);
                         }
                         return r.json();
                     }),
-                    fetch(`${baseUrl}/rest/v1/sessoes_ativas?select=*`, { headers }).then(r => r.json().catch(() => []))
+                    fetch(`${baseUrl}/rest/v1/rpc/listar_sessoes_ativas`, {
+                        method: 'POST',
+                        headers
+                    }).then(r => r.json().catch(() => []))
                 ]);
 
                 const users = authRes || [];
@@ -1053,6 +1075,22 @@
         }
 
         async function updateUserStatus(userId, newStatus) {
+            const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            
+            if (isLocalhost) {
+                try {
+                    const response = await fetch('/api/update-status', {
+                        method: 'POST',
+                        body: JSON.stringify({ userId, status: newStatus })
+                    });
+                    if (!response.ok) throw new Error("Erro ao atualizar status no servidor local.");
+                    loadUsers();
+                } catch (error) {
+                    alert("Erro ao alterar status: " + error.message);
+                }
+                return;
+            }
+
             const config = getSupabaseConfig();
             try {
                 const headers = getSupabaseHeaders(config.key);
@@ -1065,10 +1103,19 @@
                     body.expira_em = expDate.toISOString();
                 }
 
-                const response = await fetch(`${baseUrl}/rest/v1/perfis_usuarios?id=eq.${userId}`, {
-                    method: 'PATCH',
+                const user = allUsers.find(u => u.id === userId) || {};
+                const screensLimit = user.limite_telas || 1;
+                const expDateVal = body.expira_em || user.expira_em || null;
+
+                const response = await fetch(`${baseUrl}/rest/v1/rpc/atualizar_perfil_usuario`, {
+                    method: 'POST',
                     headers,
-                    body: JSON.stringify(body)
+                    body: JSON.stringify({
+                        p_user_id: userId,
+                        p_status: newStatus,
+                        p_limite_telas: parseInt(screensLimit),
+                        p_expira_em: expDateVal
+                    })
                 });
 
                 if (!response.ok) throw new Error("Erro ao atualizar status.");
@@ -1081,6 +1128,23 @@
 
         async function changeSubscriptionDuration(userId, durationDays) {
             if (!durationDays) return;
+            const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            
+            if (isLocalhost) {
+                try {
+                    const response = await fetch('/api/update-status', {
+                        method: 'POST',
+                        body: JSON.stringify({ userId, status: 'ativo', duracao_dias: parseInt(durationDays) })
+                    });
+                    if (!response.ok) throw new Error("Erro ao atualizar plano no servidor local.");
+                    alert(`Acesso ativado por mais ${durationDays} dias!`);
+                    loadUsers();
+                } catch (error) {
+                    alert("Erro ao alterar duracao: " + error.message);
+                }
+                return;
+            }
+
             const config = getSupabaseConfig();
             try {
                 const headers = getSupabaseHeaders(config.key);
@@ -1089,12 +1153,17 @@
                 const expDate = new Date();
                 expDate.setDate(expDate.getDate() + parseInt(durationDays));
 
-                const response = await fetch(`${baseUrl}/rest/v1/perfis_usuarios?id=eq.${userId}`, {
-                    method: 'PATCH',
+                const user = allUsers.find(u => u.id === userId) || {};
+                const screensLimit = user.limite_telas || 1;
+
+                const response = await fetch(`${baseUrl}/rest/v1/rpc/atualizar_perfil_usuario`, {
+                    method: 'POST',
                     headers,
                     body: JSON.stringify({
-                        status: 'ativo',
-                        expira_em: expDate.toISOString()
+                        p_user_id: userId,
+                        p_status: 'ativo',
+                        p_limite_telas: parseInt(screensLimit),
+                        p_expira_em: expDate.toISOString()
                     })
                 });
 
@@ -1109,6 +1178,22 @@
 
         async function deleteUser(userId, email) {
             if (!confirm(`Tem certeza que deseja EXCLUIR permanentemente o usuário ${email}?`)) {
+                return;
+            }
+
+            const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            
+            if (isLocalhost) {
+                try {
+                    const response = await fetch('/api/delete-user', {
+                        method: 'POST',
+                        body: JSON.stringify({ userId })
+                    });
+                    if (!response.ok) throw new Error("Erro ao deletar usuário no servidor local.");
+                    loadUsers();
+                } catch (error) {
+                    alert("Erro ao excluir usuário: " + error.message);
+                }
                 return;
             }
 
@@ -1132,16 +1217,42 @@
         }
 
         async function changeScreensLimit(userId, limit) {
+            const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            
+            if (isLocalhost) {
+                try {
+                    const user = allUsers.find(u => u.id === userId) || {};
+                    const status = user.status || 'teste';
+                    const response = await fetch('/api/update-status', {
+                        method: 'POST',
+                        body: JSON.stringify({ userId, status, limite_telas: parseInt(limit) })
+                    });
+                    if (!response.ok) throw new Error("Erro ao atualizar limite de telas no servidor local.");
+                    alert(`Limite de telas alterado para ${limit}!`);
+                    loadUsers();
+                } catch (error) {
+                    alert("Erro ao alterar limite de telas: " + error.message);
+                }
+                return;
+            }
+
             const config = getSupabaseConfig();
             try {
                 const headers = getSupabaseHeaders(config.key);
                 const baseUrl = config.url.replace(/\/$/, '');
 
-                const response = await fetch(`${baseUrl}/rest/v1/perfis_usuarios?id=eq.${userId}`, {
-                    method: 'PATCH',
+                const user = allUsers.find(u => u.id === userId) || {};
+                const status = user.status || 'teste';
+                const expiraEm = user.expira_em || null;
+
+                const response = await fetch(`${baseUrl}/rest/v1/rpc/atualizar_perfil_usuario`, {
+                    method: 'POST',
                     headers,
                     body: JSON.stringify({
-                        limite_telas: parseInt(limit)
+                        p_user_id: userId,
+                        p_status: status,
+                        p_limite_telas: parseInt(limit),
+                        p_expira_em: expiraEm
                     })
                 });
 
@@ -1163,6 +1274,34 @@
 
             if (!email || !password) {
                 showMessage('form-status', "Por favor, digite o e-mail e a senha!", true);
+                return;
+            }
+
+            const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            
+            if (isLocalhost) {
+                try {
+                    const response = await fetch('/api/create-user', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            email,
+                            password,
+                            status,
+                            duracao_dias: parseInt(duracao),
+                            limite_telas: parseInt(screensLimit)
+                        })
+                    });
+                    if (!response.ok) {
+                        const err = await response.json();
+                        throw new Error(err.message || "Erro ao criar usuário no servidor local.");
+                    }
+                    showMessage('form-status', `Usuário ${email} criado com sucesso!`);
+                    document.getElementById('new-email').value = '';
+                    document.getElementById('new-password').value = '';
+                    loadUsers();
+                } catch (error) {
+                    showMessage('form-status', "Erro ao criar usuário: " + error.message, true);
+                }
                 return;
             }
 
@@ -1198,15 +1337,17 @@
                         expDate.setDate(expDate.getDate() + parseInt(duracao));
                     }
 
-                    await fetch(`${baseUrl}/rest/v1/perfis_usuarios?id=eq.${userId}`, {
-                        method: 'PATCH',
+                    const response = await fetch(`${baseUrl}/rest/v1/rpc/atualizar_perfil_usuario`, {
+                        method: 'POST',
                         headers,
                         body: JSON.stringify({
-                            status,
-                            expira_em: expDate.toISOString(),
-                            limite_telas: parseInt(screensLimit)
+                            p_user_id: userId,
+                            p_status: status,
+                            p_limite_telas: parseInt(screensLimit),
+                            p_expira_em: expDate.toISOString()
                         })
                     });
+                    if (!response.ok) throw new Error("Erro ao criar perfil de usuário via RPC.");
                 }
 
                 showMessage('form-status', `Usuário ${email} criado com sucesso!`);
@@ -1237,22 +1378,39 @@
                 return;
             }
 
+            const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            
+            if (isLocalhost) {
+                try {
+                    const response = await fetch('/api/create-code', {
+                        method: 'POST',
+                        body: JSON.stringify({ codigo, duracao_dias: parseInt(duracao) })
+                    });
+                    if (!response.ok) {
+                        const err = await response.json();
+                        throw new Error(err.message || "Erro ao criar código VIP no servidor local.");
+                    }
+                    showMessage('vip-status', `Código VIP ${codigo} criado com sucesso!`);
+                    document.getElementById('vip-code').value = '';
+                    loadVipCodes();
+                } catch (error) {
+                    showMessage('vip-status', error.message, true);
+                }
+                return;
+            }
+
             const config = getSupabaseConfig();
             try {
                 const headers = getSupabaseHeaders(config.key);
                 const baseUrl = config.url.replace(/\/$/, '');
 
-                const response = await fetch(`${baseUrl}/rest/v1/codigos_ativacao`, {
+                const response = await fetch(`${baseUrl}/rest/v1/rpc/criar_codigo_ativacao`, {
                     method: 'POST',
                     headers,
-                    body: JSON.stringify({
-                        codigo,
-                        duracao_dias: parseInt(duracao),
-                        usado: false
-                    })
+                    body: JSON.stringify({ p_codigo: codigo, p_duracao_dias: parseInt(duracao) })
                 });
 
-                if (!response.ok) throw new Error("Erro ao cadastrar código. Talvez já exista.");
+                if (!response.ok) throw new Error("Erro ao cadastrar código via RPC. Talvez já exista.");
 
                 showMessage('vip-status', `Código VIP ${codigo} criado com sucesso!`);
                 document.getElementById('vip-code').value = '';
@@ -1266,13 +1424,31 @@
             const tbody = document.getElementById('vip-table-body');
             tbody.innerHTML = `<tr><td colspan="7" style="text-align: center;">Carregando códigos...</td></tr>`;
 
+            const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            
+            if (isLocalhost) {
+                try {
+                    const response = await fetch('/api/codes');
+                    if (!response.ok) throw new Error("Erro ao obter lista de códigos no servidor local.");
+                    const data = await response.json();
+                    allCodes = data || [];
+                    renderVipTable(allCodes);
+                } catch (e) {
+                    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--danger);">Erro: ${e.message}</td></tr>`;
+                }
+                return;
+            }
+
             const config = getSupabaseConfig();
             try {
                 const headers = getSupabaseHeaders(config.key);
                 const baseUrl = config.url.replace(/\/$/, '');
 
-                const response = await fetch(`${baseUrl}/rest/v1/codigos_ativacao?select=*`, { headers });
-                if (!response.ok) throw new Error("Erro ao obter lista de códigos.");
+                const response = await fetch(`${baseUrl}/rest/v1/rpc/listar_codigos_ativacao`, {
+                    method: 'POST',
+                    headers
+                });
+                if (!response.ok) throw new Error("Erro ao obter lista de códigos via RPC.");
 
                 const data = await response.json();
                 allCodes = data || [];
@@ -1322,17 +1498,34 @@
                 return;
             }
 
+            const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            
+            if (isLocalhost) {
+                try {
+                    const response = await fetch('/api/delete-code', {
+                        method: 'POST',
+                        body: JSON.stringify({ codigo })
+                    });
+                    if (!response.ok) throw new Error("Erro ao deletar código VIP no servidor local.");
+                    loadVipCodes();
+                } catch (error) {
+                    alert("Erro ao excluir código VIP: " + error.message);
+                }
+                return;
+            }
+
             const config = getSupabaseConfig();
             try {
                 const headers = getSupabaseHeaders(config.key);
                 const baseUrl = config.url.replace(/\/$/, '');
 
-                const response = await fetch(`${baseUrl}/rest/v1/codigos_ativacao?codigo=eq.${codigo}`, {
-                    method: 'DELETE',
-                    headers
+                const response = await fetch(`${baseUrl}/rest/v1/rpc/deletar_codigo_ativacao`, {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify({ p_codigo: codigo })
                 });
 
-                if (!response.ok) throw new Error("Erro ao excluir.");
+                if (!response.ok) throw new Error("Erro ao excluir via RPC.");
 
                 loadVipCodes();
             } catch (error) {
