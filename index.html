@@ -1,0 +1,1287 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Controle - Samack TV</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --primary: #ff0000;
+            --primary-hover: #cc0000;
+            --text-color: #ffffff;
+            --text-secondary: #a0a0a0;
+            --success: #2e7d32;
+            --warning: #ef6c00;
+            --danger: #c62828;
+            --border: #333333;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background-color: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 20px;
+            color: white;
+        }
+
+        .logo-title {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        /* Tabs Menu */
+        .tabs-header {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .tab-btn:hover {
+            color: white;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        @media (min-width: 900px) {
+            .container {
+                grid-template-columns: 350px 1fr;
+            }
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            font-size: 18px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--primary);
+            padding-left: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px 14px;
+            background-color: #121212;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: white;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        button.btn-secondary {
+            background-color: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            margin-top: 10px;
+        }
+
+        button.btn-secondary:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background-color: #121212;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        .stat-val {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th, td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+        }
+
+        th {
+            background-color: #151515;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .badge-ativo {
+            background-color: rgba(46, 125, 50, 0.2);
+            color: #81c784;
+        }
+
+        .badge-teste {
+            background-color: rgba(239, 108, 0, 0.2);
+            color: #ffb74d;
+        }
+
+        .badge-bloqueado {
+            background-color: rgba(198, 40, 40, 0.2);
+            color: #e57373;
+        }
+
+        .actions-row {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .btn-action {
+            padding: 6px 10px;
+            font-size: 12px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            width: auto;
+        }
+
+        .btn-activate {
+            background-color: var(--success);
+            color: white;
+        }
+
+        .btn-activate:hover {
+            background-color: #1b5e20;
+        }
+
+        .btn-block {
+            background-color: var(--warning);
+            color: white;
+        }
+
+        .btn-block:hover {
+            background-color: #e65100;
+        }
+
+        .btn-delete {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background-color: #b71c1c;
+        }
+
+        .status-message {
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .status-success {
+            background-color: rgba(46, 125, 50, 0.2);
+            color: #81c784;
+            border: 1px solid var(--success);
+        }
+
+        .status-error {
+            background-color: rgba(198, 40, 40, 0.2);
+            color: #e57373;
+            border: 1px solid var(--danger);
+        }
+
+        .config-card {
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .search-box {
+            margin-bottom: 16px;
+        }
+
+        /* --- LOGIN OVERLAY SYSTEM --- */
+        #login-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 99999;
+            background-color: #0c0c0c;
+            background-image: radial-gradient(circle at center, #1b0000 0%, #030000 100%);
+        }
+
+        .login-box {
+            background: #1e1e1e;
+            padding: 40px;
+            border-radius: 16px;
+            border: 1px solid var(--primary);
+            box-shadow: 0 0 40px rgba(255, 0, 0, 0.35);
+            text-align: center;
+            width: 100%;
+            max-width: 400px;
+            animation: login-fadeIn 0.5s ease-out;
+        }
+
+        @keyframes login-fadeIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .login-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            background: #121212;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            outline: none;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+
+        .login-input:focus {
+            border-color: var(--primary);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        .login-btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .login-btn:active {
+            transform: scale(0.98);
+        }
+
+        #login-error {
+            color: #ff4d4d;
+            margin-top: 15px;
+            font-size: 14px;
+            display: none;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <!-- LOGIN ACCESS CONTROL -->
+    <div id="login-overlay">
+        <div class="login-box">
+            <div class="logo-icon" style="margin: 0 auto 15px auto; width: 60px; height: 60px; font-size: 28px;">S</div>
+            <div class="login-title">Samack TV Admin</div>
+            <input type="password" id="login-pass" class="login-input" placeholder="Senha de Acesso" autofocus>
+            <button class="login-btn" onclick="attemptLogin()">ACESSAR PAINEL</button>
+            <div id="login-error">Senha incorreta! Tente novamente.</div>
+        </div>
+    </div>
+
+    <header>
+        <div class="logo-container">
+            <div class="logo-icon">S</div>
+            <div class="logo-title">Samack TV</div>
+        </div>
+        <div style="font-size: 14px; color: var(--text-secondary);" id="connection-status">
+            Carregando...
+        </div>
+    </header>
+
+    <!-- Tabs Header -->
+    <div class="tabs-header" id="tabs-menu" style="display: none;">
+        <button class="tab-btn active" id="tab-users-btn" onclick="switchTab('users')">Usuários & Assinaturas</button>
+        <button class="tab-btn" id="tab-vip-btn" onclick="switchTab('vip')">Gerenciar Códigos VIP</button>
+    </div>
+
+    <!-- Config Card (Credenciais) -->
+    <div id="config-panel" class="card config-card" style="width: 100%; max-width: 1200px; display: none;">
+        <h2>Configuração de Conexão com o Supabase</h2>
+        <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 15px;">
+            Este painel gerencia diretamente o Supabase do seu navegador. Insira a URL do projeto e a chave <strong>service_role (secret key)</strong> para autorizar o acesso. Suas credenciais são salvas apenas localmente no seu computador.
+        </p>
+        <div style="display: grid; grid-template-columns: 1fr; gap: 15px; margin-bottom: 15px;">
+            <div class="form-group" style="margin-bottom: 0;">
+                <label>URL do Projeto Supabase</label>
+                <input type="text" id="supabase-url" placeholder="https://xxxx.supabase.co">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <label>Chave de Serviço (Service Role Key - sb_secret_...)</label>
+                <input type="password" id="supabase-service-key" placeholder="Insira a sua chave secreta service_role">
+            </div>
+        </div>
+        <button id="btn-connect" onclick="connectSupabase()">Conectar e Salvar</button>
+    </div>
+
+    <!-- TAB 1: USERS PANEL -->
+    <div class="container tab-content" id="panel-users" style="display: none;">
+        <!-- Left Column: Stats & User Creation -->
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+            <!-- Stats -->
+            <div class="card">
+                <h2>Resumo do Aplicativo</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-val" id="stat-total">0</div>
+                        <div class="stat-label">Total</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-val" id="stat-ativo" style="color: #81c784;">0</div>
+                        <div class="stat-label">Ativos</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-val" id="stat-teste" style="color: #ffb74d;">0</div>
+                        <div class="stat-label">Testes</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-val" id="stat-bloqueado" style="color: #e57373;">0</div>
+                        <div class="stat-label">Bloqueados</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Create User -->
+            <div class="card">
+                <h2>Cadastrar Novo Usuário</h2>
+                <div id="form-status" class="status-message"></div>
+                <div class="form-group">
+                    <label>E-mail</label>
+                    <input type="email" id="new-email" placeholder="email@exemplo.com">
+                </div>
+                <div class="form-group">
+                    <label>Senha (Mínimo 6 caracteres)</label>
+                    <input type="password" id="new-password" placeholder="Defina a senha">
+                </div>
+                <div class="form-group">
+                    <label>Status Inicial</label>
+                    <select id="new-status" onchange="toggleNewDuration()">
+                        <option value="teste">Teste (4 horas grátis)</option>
+                        <option value="ativo" selected>Ativo (Com Assinatura)</option>
+                        <option value="bloqueado">Bloqueado</option>
+                    </select>
+                </div>
+                <div class="form-group" id="new-duration-group">
+                    <label>Duração da Assinatura</label>
+                    <select id="new-duration">
+                        <option value="1">1 dia</option>
+                        <option value="5">5 dias</option>
+                        <option value="10">10 dias</option>
+                        <option value="15">15 dias</option>
+                        <option value="30" selected>30 dias</option>
+                        <option value="60">60 dias</option>
+                        <option value="90">90 dias</option>
+                        <option value="180">180 dias</option>
+                        <option value="365">365 dias</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Limite de Telas Simultâneas</label>
+                    <select id="new-screens-limit">
+                        <option value="1" selected>1 Tela</option>
+                        <option value="2">2 Telas</option>
+                        <option value="3">3 Telas</option>
+                        <option value="4">4 Telas</option>
+                        <option value="5">5 Telas</option>
+                    </select>
+                </div>
+                <button onclick="createUser()">CRIAR USUÁRIO</button>
+            </div>
+        </div>
+
+        <!-- Right Column: Users List -->
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+                <h2 style="margin-bottom: 0;">Lista de Usuários</h2>
+                <button onclick="loadUsers()" style="width: auto; padding: 6px 12px;" class="btn-secondary">Atualizar Lista</button>
+            </div>
+            
+            <div class="search-box">
+                <input type="text" id="search-input" placeholder="Buscar por e-mail..." oninput="filterUsers()">
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>E-mail</th>
+                            <th>Status</th>
+                            <th>Conexões</th>
+                            <th>Data de Cadastro</th>
+                            <th>Validade (Assinatura)</th>
+                            <th>Limite de Telas</th>
+                            <th>Alterar Plano</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-table-body">
+                        <tr>
+                            <td colspan="8" style="text-align: center; color: var(--text-secondary);">
+                                Carregando...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 2: VIP CODES PANEL -->
+    <div class="container tab-content" id="panel-vip" style="display: none;">
+        <!-- Left Column: Generate VIP Code -->
+        <div class="card">
+            <h2>Gerar Novo Código VIP</h2>
+            <div id="vip-status" class="status-message"></div>
+            <div class="form-group">
+                <label>Código VIP (Texto livre ou gerado)</label>
+                <input type="text" id="vip-code" placeholder="Ex: VIP-JOAO-SILVA">
+                <button class="btn-secondary" onclick="generateRandomCode()" style="margin-top: 8px;">Gerar Código Aleatório</button>
+            </div>
+            <div class="form-group">
+                <label>Duração (Dias)</label>
+                <select id="vip-duration">
+                    <option value="1">1 dia</option>
+                    <option value="5">5 dias</option>
+                    <option value="10">10 dias</option>
+                    <option value="15">15 dias</option>
+                    <option value="30" selected>30 dias (1 Mês)</option>
+                    <option value="60">60 dias (2 Meses)</option>
+                    <option value="90">90 dias (3 Meses)</option>
+                    <option value="180">180 dias (6 Meses)</option>
+                    <option value="365">365 dias (1 Ano)</option>
+                </select>
+            </div>
+            <button onclick="createVipCode()">CRIAR CÓDIGO VIP</button>
+        </div>
+
+        <!-- Right Column: Codes List -->
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin-bottom: 0;">Lista de Códigos VIP</h2>
+                <button onclick="loadVipCodes()" style="width: auto; padding: 6px 12px;" class="btn-secondary">Atualizar Códigos</button>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Validade (Dias)</th>
+                            <th>Status</th>
+                            <th>Acessos</th>
+                            <th>Usado Por</th>
+                            <th>Usado Em</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="vip-table-body">
+                        <tr>
+                            <td colspan="7" style="text-align: center; color: var(--text-secondary);">
+                                Carregando códigos...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allUsers = [];
+        let allCodes = [];
+
+        // Habilita tecla enter no login
+        document.getElementById('login-pass').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                attemptLogin();
+            }
+        });
+
+        function attemptLogin() {
+            const pass = document.getElementById('login-pass').value;
+            if (pass === "samack123") {
+                sessionStorage.setItem('samack_admin_logged', 'true');
+                document.getElementById('login-overlay').style.display = 'none';
+                initPainel();
+            } else {
+                document.getElementById('login-error').style.display = 'block';
+            }
+        }
+
+        window.onload = function() {
+            if (sessionStorage.getItem('samack_admin_logged') === 'true') {
+                document.getElementById('login-overlay').style.display = 'none';
+                initPainel();
+            } else {
+                document.getElementById('login-overlay').style.display = 'flex';
+                document.getElementById('login-pass').focus();
+            }
+        };
+
+        function getSupabaseConfig() {
+            const url = localStorage.getItem('samack_supabase_url') || '';
+            const key = localStorage.getItem('samack_supabase_key') || '';
+            return { url, key };
+        }
+
+        function saveSupabaseConfig(url, key) {
+            localStorage.setItem('samack_supabase_url', url);
+            localStorage.setItem('samack_supabase_key', key);
+        }
+
+        function getSupabaseHeaders(key) {
+            return {
+                "apikey": key,
+                "Authorization": `Bearer ${key}`,
+                "Content-Type": "application/json"
+            };
+        }
+
+        function initPainel() {
+            const config = getSupabaseConfig();
+            
+            if (config.url && config.key) {
+                document.getElementById('connection-status').innerText = "Conectado";
+                document.getElementById('connection-status').style.color = "#81c784";
+                
+                document.getElementById('tabs-menu').style.display = 'flex';
+                document.getElementById('panel-users').style.display = 'grid';
+                
+                document.getElementById('supabase-url').value = config.url;
+                document.getElementById('supabase-service-key').value = config.key;
+
+                addConfigButton();
+                loadUsers();
+            } else {
+                showConfigPanel();
+            }
+        }
+
+        function showConfigPanel() {
+            document.getElementById('connection-status').innerText = "Configuração Necessária";
+            document.getElementById('connection-status').style.color = "#ffb74d";
+            document.getElementById('config-panel').style.display = 'block';
+            document.getElementById('tabs-menu').style.display = 'none';
+            document.getElementById('panel-users').style.display = 'none';
+            document.getElementById('panel-vip').style.display = 'none';
+        }
+
+        function addConfigButton() {
+            if (document.getElementById('btn-show-config')) return;
+            const configLink = document.createElement('button');
+            configLink.id = "btn-show-config";
+            configLink.innerText = "Configurações";
+            configLink.className = "btn-secondary";
+            configLink.style.width = "auto";
+            configLink.style.padding = "6px 12px";
+            configLink.onclick = function() {
+                const panel = document.getElementById('config-panel');
+                panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+            };
+            document.querySelector('header').appendChild(configLink);
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.style.display = 'none');
+            
+            if (tabName === 'users') {
+                document.getElementById('tab-users-btn').classList.add('active');
+                document.getElementById('panel-users').style.display = 'grid';
+                loadUsers();
+            } else {
+                document.getElementById('tab-vip-btn').classList.add('active');
+                document.getElementById('panel-vip').style.display = 'grid';
+                loadVipCodes();
+            }
+        }
+
+        function showMessage(elementId, text, isError = false) {
+            const el = document.getElementById(elementId);
+            el.innerText = text;
+            el.className = `status-message ${isError ? 'status-error' : 'status-success'}`;
+            el.style.display = 'block';
+            setTimeout(() => {
+                el.style.display = 'none';
+            }, 5000);
+        }
+
+        function toggleNewDuration() {
+            const status = document.getElementById('new-status').value;
+            const durationGroup = document.getElementById('new-duration-group');
+            if (status === 'ativo') {
+                durationGroup.style.display = 'block';
+            } else {
+                durationGroup.style.display = 'none';
+            }
+        }
+
+        async function connectSupabase() {
+            const url = document.getElementById('supabase-url').value.trim();
+            const key = document.getElementById('supabase-service-key').value.trim();
+
+            if (!url || !key) {
+                alert("Por favor, preencha a URL e a Chave de Serviço!");
+                return;
+            }
+
+            try {
+                // Testar a conexão
+                const headers = getSupabaseHeaders(key);
+                const testUrl = `${url.replace(/\/$/, '')}/rest/v1/perfis_usuarios?limit=1`;
+                const response = await fetch(testUrl, { headers });
+                
+                if (!response.ok) {
+                    throw new Error("Erro de autorização. Verifique a URL e a chave service_role.");
+                }
+
+                saveSupabaseConfig(url, key);
+
+                document.getElementById('connection-status').innerText = "Conectado";
+                document.getElementById('connection-status').style.color = "#81c784";
+                document.getElementById('config-panel').style.display = 'none';
+                
+                document.getElementById('tabs-menu').style.display = 'flex';
+                document.getElementById('panel-users').style.display = 'grid';
+                
+                addConfigButton();
+                loadUsers();
+            } catch (e) {
+                alert("Erro ao conectar: " + e.message);
+            }
+        }
+
+        async function loadUsers() {
+            const tbody = document.getElementById('users-table-body');
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center;">Carregando usuários...</td></tr>`;
+
+            const config = getSupabaseConfig();
+            if (!config.url || !config.key) {
+                showConfigPanel();
+                return;
+            }
+
+            try {
+                const headers = getSupabaseHeaders(config.key);
+                const baseUrl = config.url.replace(/\/$/, '');
+
+                const [authRes, dbRes, sessionsRes] = await Promise.all([
+                    fetch(`${baseUrl}/auth/v1/admin/users`, { headers }).then(r => {
+                        if (!r.ok) throw new Error("Erro ao consultar usuários no Auth.");
+                        return r.json();
+                    }),
+                    fetch(`${baseUrl}/rest/v1/perfis_usuarios?select=*`, { headers }).then(r => {
+                        if (!r.ok) throw new Error("Erro ao consultar perfis de usuário.");
+                        return r.json();
+                    }),
+                    fetch(`${baseUrl}/rest/v1/sessoes_ativas?select=*`, { headers }).then(r => r.json().catch(() => []))
+                ]);
+
+                const users = authRes.users || authRes || [];
+                const profiles = dbRes || [];
+                const sessionsList = sessionsRes || [];
+
+                const profileMap = {};
+                profiles.forEach(p => {
+                    if (p.id) profileMap[p.id] = p;
+                });
+
+                const now = new Date();
+                const userSessionsMap = {};
+                sessionsList.forEach(s => {
+                    const uid = s.usuario_id;
+                    if (!uid) return;
+                    const lastActStr = s.ultima_atividade;
+                    if (lastActStr) {
+                        const lastAct = new Date(lastActStr);
+                        const diff = Math.abs((now - lastAct) / 1000);
+                        if (diff < 300) {
+                            const deviceName = s.device_name || s.device_id || "Desconhecido";
+                            if (!userSessionsMap[uid]) userSessionsMap[uid] = [];
+                            userSessionsMap[uid].push(deviceName);
+                        }
+                    }
+                });
+
+                allUsers = users.map(u => {
+                    const pid = u.id;
+                    const p = profileMap[pid] || {};
+                    return {
+                        id: pid,
+                        email: u.email || "",
+                        status: p.status || "teste",
+                        limite_telas: p.limite_telas || 1,
+                        criado_em: p.criado_em || u.created_at || "",
+                        expira_em: p.expira_em || null,
+                        active_devices: userSessionsMap[pid] || []
+                    };
+                });
+
+                updateStats();
+                renderUsersTable(allUsers);
+            } catch (error) {
+                console.error(error);
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--danger);">Erro ao carregar dados: ${error.message}</td></tr>`;
+            }
+        }
+
+        function renderUsersTable(usersList) {
+            const tbody = document.getElementById('users-table-body');
+            if (usersList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-secondary);">Nenhum usuário encontrado.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = '';
+            usersList.forEach(user => {
+                const tr = document.createElement('tr');
+                
+                const dateCriacao = new Date(user.criado_em);
+                const criadoFormatado = isNaN(dateCriacao) ? "-" : dateCriacao.toLocaleDateString('pt-BR');
+
+                let validadeText = "-";
+                let validadeBadge = "ativo";
+                
+                if (user.expira_em) {
+                    const dateExpira = new Date(user.expira_em);
+                    if (!isNaN(dateExpira)) {
+                        const agora = new Date();
+                        validadeText = dateExpira.toLocaleDateString('pt-BR') + ' ' + dateExpira.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+                        if (dateExpira < agora) {
+                            validadeText = `<span style="color: var(--danger); font-weight: bold;">Expirou (${dateExpira.toLocaleDateString('pt-BR')})</span>`;
+                            validadeBadge = "bloqueado";
+                        } else if (user.status === 'teste') {
+                            const diffMs = dateExpira - agora;
+                            const diffHoras = Math.floor(diffMs / (1000 * 60 * 60));
+                            const diffMinutos = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                            validadeText = `<span style="color: var(--warning); font-weight: bold;">Teste (${diffHoras}h ${diffMinutos}m restando)</span>`;
+                            validadeBadge = "teste";
+                        }
+                    }
+                }
+
+                const activeDevices = user.active_devices || [];
+                const activeCount = activeDevices.length;
+                let activeBadgeClass = activeCount > 0 ? "badge-ativo" : "badge-bloqueado";
+                let activeText = activeCount > 0 ? `${activeCount} online` : "offline";
+                let activeTooltip = activeCount > 0 ? `Dispositivos:\n${activeDevices.join('\n')}` : "Nenhum dispositivo conectado recentemente";
+                let activeBadge = `<span class="badge ${activeBadgeClass}" title="${activeTooltip}" style="cursor: help; text-transform: none;">${activeText}</span>`;
+
+                let planoSelector = `
+                    <select onchange="changeSubscriptionDuration('${user.id}', this.value)" style="width: auto; padding: 4px; font-size: 12px;">
+                        <option value="">Ações...</option>
+                        <option value="1">Ativar 1 dia</option>
+                        <option value="5">Ativar 5 dias</option>
+                        <option value="10">Ativar 10 dias</option>
+                        <option value="15">Ativar 15 dias</option>
+                        <option value="30">Ativar 30 dias</option>
+                        <option value="60">Ativar 60 dias</option>
+                        <option value="90">Ativar 90 dias</option>
+                        <option value="180">Ativar 180 dias</option>
+                        <option value="365">Ativar 365 dias</option>
+                    </select>
+                `;
+
+                let screensSelector = `
+                    <select onchange="changeScreensLimit('${user.id}', this.value)" style="width: auto; padding: 4px; font-size: 12px;">
+                        <option value="1" ${user.limite_telas === 1 ? 'selected' : ''}>1 Tela</option>
+                        <option value="2" ${user.limite_telas === 2 ? 'selected' : ''}>2 Telas</option>
+                        <option value="3" ${user.limite_telas === 3 ? 'selected' : ''}>3 Telas</option>
+                        <option value="4" ${user.limite_telas === 4 ? 'selected' : ''}>4 Telas</option>
+                        <option value="5" ${user.limite_telas === 5 ? 'selected' : ''}>5 Telas</option>
+                    </select>
+                `;
+
+                let actionButtons = '';
+                if (user.status !== 'bloqueado') {
+                    actionButtons += `<button class="btn-action btn-block" onclick="updateUserStatus('${user.id}', 'bloqueado')">Bloquear</button>`;
+                } else {
+                    actionButtons += `<button class="btn-action btn-activate" onclick="updateUserStatus('${user.id}', 'ativo')">Desbloquear</button>`;
+                }
+                actionButtons += `<button class="btn-action btn-delete" onclick="deleteUser('${user.id}', '${user.email}')">Excluir</button>`;
+
+                tr.innerHTML = `
+                    <td><strong>${user.email}</strong></td>
+                    <td><span class="badge badge-${user.status === 'bloqueado' ? 'bloqueado' : validadeBadge}">${user.status}</span></td>
+                    <td>${activeBadge}</td>
+                    <td>${criadoFormatado}</td>
+                    <td>${validadeText}</td>
+                    <td>${screensSelector}</td>
+                    <td>${planoSelector}</td>
+                    <td><div class="actions-row">${actionButtons}</div></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function filterUsers() {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const filtered = allUsers.filter(u => u.email.toLowerCase().includes(query));
+            renderUsersTable(filtered);
+        }
+
+        function updateStats() {
+            const agora = new Date();
+            document.getElementById('stat-total').innerText = allUsers.length;
+            
+            const ativos = allUsers.filter(u => {
+                if (u.status === 'bloqueado') return false;
+                if (!u.expira_em) return true;
+                return new Date(u.expira_em) >= agora;
+            }).length;
+            
+            const testes = allUsers.filter(u => {
+                if (u.status !== 'teste') return false;
+                if (!u.expira_em) return false;
+                return new Date(u.expira_em) >= agora;
+            }).length;
+            
+            const bloqueados = allUsers.filter(u => {
+                if (u.status === 'bloqueado') return true;
+                if (!u.expira_em) return false;
+                return new Date(u.expira_em) < agora;
+            }).length;
+
+            document.getElementById('stat-ativo').innerText = ativos;
+            document.getElementById('stat-teste').innerText = testes;
+            document.getElementById('stat-bloqueado').innerText = bloqueados;
+        }
+
+        async function updateUserStatus(userId, newStatus) {
+            const config = getSupabaseConfig();
+            try {
+                const headers = getSupabaseHeaders(config.key);
+                const baseUrl = config.url.replace(/\/$/, '');
+
+                const body = { status: newStatus };
+                if (newStatus === "teste") {
+                    const expDate = new Date();
+                    expDate.setHours(expDate.getHours() + 4);
+                    body.expira_em = expDate.toISOString();
+                }
+
+                const response = await fetch(`${baseUrl}/rest/v1/perfis_usuarios?id=eq.${userId}`, {
+                    method: 'PATCH',
+                    headers,
+                    body: JSON.stringify(body)
+                });
+
+                if (!response.ok) throw new Error("Erro ao atualizar status.");
+                
+                loadUsers();
+            } catch (error) {
+                alert("Erro ao alterar status: " + error.message);
+            }
+        }
+
+        async function changeSubscriptionDuration(userId, durationDays) {
+            if (!durationDays) return;
+            const config = getSupabaseConfig();
+            try {
+                const headers = getSupabaseHeaders(config.key);
+                const baseUrl = config.url.replace(/\/$/, '');
+
+                const expDate = new Date();
+                expDate.setDate(expDate.getDate() + parseInt(durationDays));
+
+                const response = await fetch(`${baseUrl}/rest/v1/perfis_usuarios?id=eq.${userId}`, {
+                    method: 'PATCH',
+                    headers,
+                    body: JSON.stringify({
+                        status: 'ativo',
+                        expira_em: expDate.toISOString()
+                    })
+                });
+
+                if (!response.ok) throw new Error("Erro ao atualizar plano.");
+                
+                alert(`Acesso ativado por mais ${durationDays} dias!`);
+                loadUsers();
+            } catch (error) {
+                alert("Erro ao alterar duracao: " + error.message);
+            }
+        }
+
+        async function deleteUser(userId, email) {
+            if (!confirm(`Tem certeza que deseja EXCLUIR permanentemente o usuário ${email}?`)) {
+                return;
+            }
+
+            const config = getSupabaseConfig();
+            try {
+                const headers = getSupabaseHeaders(config.key);
+                const baseUrl = config.url.replace(/\/$/, '');
+
+                const response = await fetch(`${baseUrl}/auth/v1/admin/users/${userId}`, {
+                    method: 'DELETE',
+                    headers
+                });
+
+                if (!response.ok) throw new Error("Erro ao deletar usuário.");
+
+                loadUsers();
+            } catch (error) {
+                alert("Erro ao excluir usuário: " + error.message);
+            }
+        }
+
+        async function changeScreensLimit(userId, limit) {
+            const config = getSupabaseConfig();
+            try {
+                const headers = getSupabaseHeaders(config.key);
+                const baseUrl = config.url.replace(/\/$/, '');
+
+                const response = await fetch(`${baseUrl}/rest/v1/perfis_usuarios?id=eq.${userId}`, {
+                    method: 'PATCH',
+                    headers,
+                    body: JSON.stringify({
+                        limite_telas: parseInt(limit)
+                    })
+                });
+
+                if (!response.ok) throw new Error("Erro ao atualizar telas.");
+                
+                alert(`Limite de telas alterado para ${limit}!`);
+                loadUsers();
+            } catch (error) {
+                alert("Erro ao alterar limite de telas: " + error.message);
+            }
+        }
+
+        async function createUser() {
+            const email = document.getElementById('new-email').value.trim();
+            const password = document.getElementById('new-password').value.trim();
+            const status = document.getElementById('new-status').value;
+            const duracao = document.getElementById('new-duration').value;
+            const screensLimit = document.getElementById('new-screens-limit').value;
+
+            if (!email || !password) {
+                showMessage('form-status', "Por favor, digite o e-mail e a senha!", true);
+                return;
+            }
+
+            const config = getSupabaseConfig();
+            try {
+                const headers = getSupabaseHeaders(config.key);
+                const baseUrl = config.url.replace(/\/$/, '');
+
+                const authResponse = await fetch(`${baseUrl}/auth/v1/admin/users`, {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify({ email, password, email_confirm: true })
+                });
+
+                if (!authResponse.ok) {
+                    const errData = await authResponse.json();
+                    throw new Error(errData.message || "Erro ao criar usuário.");
+                }
+
+                const authRes = await authResponse.json();
+                const userId = authRes.id;
+
+                if (userId) {
+                    await new Promise(resolve => setTimeout(resolve, 800));
+
+                    const expDate = new Date();
+                    if (status === "teste") {
+                        expDate.setHours(expDate.getHours() + 4);
+                    } else {
+                        expDate.setDate(expDate.getDate() + parseInt(duracao));
+                    }
+
+                    await fetch(`${baseUrl}/rest/v1/perfis_usuarios?id=eq.${userId}`, {
+                        method: 'PATCH',
+                        headers,
+                        body: JSON.stringify({
+                            status,
+                            expira_em: expDate.toISOString(),
+                            limite_telas: parseInt(screensLimit)
+                        })
+                    });
+                }
+
+                showMessage('form-status', `Usuário ${email} criado com sucesso!`);
+                document.getElementById('new-email').value = '';
+                document.getElementById('new-password').value = '';
+                loadUsers();
+            } catch (error) {
+                showMessage('form-status', "Erro ao criar usuário: " + error.message, true);
+            }
+        }
+
+        /* VIP CODES LOGIC */
+        function generateRandomCode() {
+            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            let randCode = "VIP-";
+            for (let i = 0; i < 6; i++) {
+                randCode += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            document.getElementById('vip-code').value = randCode;
+        }
+
+        async function createVipCode() {
+            const codigo = document.getElementById('vip-code').value.trim().toUpperCase();
+            const duracao = document.getElementById('vip-duration').value;
+
+            if (!codigo) {
+                showMessage('vip-status', "Por favor, preencha o código VIP!", true);
+                return;
+            }
+
+            const config = getSupabaseConfig();
+            try {
+                const headers = getSupabaseHeaders(config.key);
+                const baseUrl = config.url.replace(/\/$/, '');
+
+                const response = await fetch(`${baseUrl}/rest/v1/codigos_ativacao`, {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify({
+                        codigo,
+                        duracao_dias: parseInt(duracao),
+                        usado: false
+                    })
+                });
+
+                if (!response.ok) throw new Error("Erro ao cadastrar código. Talvez já exista.");
+
+                showMessage('vip-status', `Código VIP ${codigo} criado com sucesso!`);
+                document.getElementById('vip-code').value = '';
+                loadVipCodes();
+            } catch (error) {
+                showMessage('vip-status', error.message, true);
+            }
+        }
+
+        async function loadVipCodes() {
+            const tbody = document.getElementById('vip-table-body');
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align: center;">Carregando códigos...</td></tr>`;
+
+            const config = getSupabaseConfig();
+            try {
+                const headers = getSupabaseHeaders(config.key);
+                const baseUrl = config.url.replace(/\/$/, '');
+
+                const response = await fetch(`${baseUrl}/rest/v1/codigos_ativacao?select=*`, { headers });
+                if (!response.ok) throw new Error("Erro ao obter lista de códigos.");
+
+                const data = await response.json();
+                allCodes = data || [];
+                renderVipTable(allCodes);
+            } catch (e) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--danger);">Erro: ${e.message}</td></tr>`;
+            }
+        }
+
+        function renderVipTable(codesList) {
+            const tbody = document.getElementById('vip-table-body');
+            if (codesList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-secondary);">Nenhum código cadastrado.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = '';
+            codesList.forEach(c => {
+                const tr = document.createElement('tr');
+                
+                const statusBadge = c.usado 
+                    ? `<span class="badge badge-bloqueado">Usado</span>` 
+                    : `<span class="badge badge-ativo">Disponível</span>`;
+                
+                const usadoEm = c.usado_em 
+                    ? new Date(c.usado_em).toLocaleDateString('pt-BR') 
+                    : "-";
+
+                const deleteBtn = `<button class="btn-action btn-delete" onclick="deleteVipCode('${c.codigo}')">Excluir</button>`;
+                const quemUsou = c.usado_por || c.usado_por_device || "-";
+                
+                tr.innerHTML = `
+                    <td><strong>${c.codigo}</strong></td>
+                    <td>${c.duracao_dias} dias</td>
+                    <td>${statusBadge}</td>
+                    <td>${c.acessos || 0}</td>
+                    <td>${quemUsou}</td>
+                    <td>${usadoEm}</td>
+                    <td><div class="actions-row">${deleteBtn}</div></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function deleteVipCode(codigo) {
+            if (!confirm(`Tem certeza que deseja EXCLUIR permanentemente o Código VIP ${codigo}?`)) {
+                return;
+            }
+
+            const config = getSupabaseConfig();
+            try {
+                const headers = getSupabaseHeaders(config.key);
+                const baseUrl = config.url.replace(/\/$/, '');
+
+                const response = await fetch(`${baseUrl}/rest/v1/codigos_ativacao?codigo=eq.${codigo}`, {
+                    method: 'DELETE',
+                    headers
+                });
+
+                if (!response.ok) throw new Error("Erro ao excluir.");
+
+                loadVipCodes();
+            } catch (error) {
+                alert("Erro ao excluir código VIP: " + error.message);
+            }
+        }
+    </script>
+</body>
+</html>
