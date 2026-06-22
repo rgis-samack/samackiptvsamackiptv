@@ -649,12 +649,27 @@
             }
         });
 
+        let sessionTimeoutToken = null;
+
         function attemptLogin() {
             const pass = document.getElementById('login-pass').value;
             if (pass === "69700330") {
                 sessionStorage.setItem('samack_admin_logged', 'true');
                 document.getElementById('login-overlay').style.display = 'none';
                 initPainel();
+
+                const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                if (!isLocalhost) {
+                    if (sessionTimeoutToken) clearTimeout(sessionTimeoutToken);
+                    sessionTimeoutToken = setTimeout(() => {
+                        sessionStorage.removeItem('samack_admin_logged');
+                        document.getElementById('login-overlay').style.display = 'flex';
+                        document.getElementById('login-pass').value = '';
+                        document.getElementById('login-pass').focus();
+                        document.getElementById('login-error').style.display = 'none';
+                        alert("Sua sessão de 5 minutos expirou. Por favor, insira a senha novamente.");
+                    }, 5 * 60 * 1000); // 5 minutos
+                }
             } else {
                 document.getElementById('login-error').style.display = 'block';
             }
@@ -666,7 +681,6 @@
             if (isLocalhost) {
                 sessionStorage.setItem('samack_admin_logged', 'true');
                 try {
-                    // Tenta carregar as credenciais dinamicamente do JSON local para evitar digitar credenciais localmente
                     const response = await fetch('/supabase_config.json');
                     if (response.ok) {
                         const localConfig = await response.json();
@@ -678,12 +692,11 @@
                 } catch (e) {
                     console.error("Erro ao carregar supabase_config.json local:", e);
                 }
-            }
-
-            if (sessionStorage.getItem('samack_admin_logged') === 'true') {
                 document.getElementById('login-overlay').style.display = 'none';
                 initPainel();
             } else {
+                // No GitHub, limpar sessão anterior no carregamento (impede manter logado no F5)
+                sessionStorage.removeItem('samack_admin_logged');
                 document.getElementById('login-overlay').style.display = 'flex';
                 document.getElementById('login-pass').focus();
             }
