@@ -1272,8 +1272,13 @@
             const duracao = document.getElementById('new-duration').value;
             const screensLimit = document.getElementById('new-screens-limit').value;
 
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!email || !password) {
                 showMessage('form-status', "Por favor, digite o e-mail e a senha!", true);
+                return;
+            }
+            if (!emailRegex.test(email)) {
+                showMessage('form-status', "Por favor, insira um e-mail válido (ex: nome@exemplo.com)!", true);
                 return;
             }
 
